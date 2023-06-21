@@ -1,4 +1,4 @@
-import { BloctoWallet } from "@blocto/aptos-wallet-adapter-plugin";
+// import { BloctoWallet } from "@blocto/aptos-wallet-adapter-plugin";
 import { FewchaWallet } from "fewcha-plugin-wallet-adapter";
 import { MartianWallet } from "@martianwallet/aptos-wallet-adapter";
 import { NightlyWallet } from "@nightlylabs/aptos-wallet-adapter-plugin";
