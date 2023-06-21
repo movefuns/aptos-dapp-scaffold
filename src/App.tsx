@@ -2,14 +2,27 @@ import { useState } from "react";
 import "./App.css";
 import { Button } from "@mui/material";
 import { WalletConnector } from "@aptos-labs/wallet-adapter-mui-design";
+import { useAutoConnect } from "./components/AutoConnectProvider";
 
 function App() {
   const [count, setCount] = useState(0);
+  const { autoConnect, setAutoConnect } = useAutoConnect();
 
   return (
     <div className="App">
       <div>
         <WalletConnector />
+        {autoConnect ? null : (
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              setAutoConnect(true);
+            }}
+          >
+            Set autoConnect
+          </Button>
+        )}
       </div>
       <h1>Vite + React + + Typescript + MUI 5</h1>
       <Button color="secondary">Secondary</Button>
