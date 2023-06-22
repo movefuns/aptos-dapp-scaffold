@@ -1,48 +1,83 @@
-import { useState } from "react";
-import "./App.css";
+import { useEffect, useState } from "react";
 import { Button } from "@mui/material";
 import { WalletConnector } from "@aptos-labs/wallet-adapter-mui-design";
 import { useAutoConnect } from "./components/AutoConnectProvider";
+import Stack from "@mui/material/Stack";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { Provider, Network } from "aptos";
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(100);
   const { autoConnect, setAutoConnect } = useAutoConnect();
+  const { network, account, wallet } = useWallet();
+  const [address, updateAddress] = useState("");
+  const [coinInfo, updateAccountCoin] = useState({});
+  let provider = new Provider(Network.MAINNET);
+  switch (network?.name.toString()) {
+    case Network.DEVNET:
+      provider = new Provider(Network.DEVNET);
+      break;
+    case Network.TESTNET:
+      provider = new Provider(Network.TESTNET);
+      break;
+  }
+
+  useEffect(() => {
+    const asyncTask = async () => {
+      if (account) {
+        const coins = await provider.getAccountCoinsData(account.address);
+        console.log(coins);
+        updateAccountCoin(coins);
+      }
+    };
+    asyncTask();
+  }, [account]);
+
+  useEffect(() => {
+    if (account) {
+      updateAddress(account.address);
+    }
+  }, [account]);
 
   return (
-    <div className="App">
-      <div>
-        <WalletConnector />
-        {autoConnect ? null : (
+    <div>
+      <WalletConnector />
+      <p>{JSON.stringify(wallet)}</p>
+      <p>{JSON.stringify(network)}</p>
+      <p>{JSON.stringify(account)}</p>
+      <p>{JSON.stringify(coinInfo)}</p>
+      <p>{address}</p>
+      {autoConnect ? null : (
+        <Button
+          variant="contained"
+          color="success"
+          onClick={() => {
+            setAutoConnect(true);
+          }}
+        >
+          Set autoConnect
+        </Button>
+      )}
+
+      <div className="card">
+        <p>Current count value is : {count} </p>
+        <Stack spacing={1} direction="row">
           <Button
             variant="contained"
             color="success"
-            onClick={() => {
-              setAutoConnect(true);
-            }}
+            onClick={() => setCount((count) => count + 1)}
           >
-            Set autoConnect
+            +
           </Button>
-        )}
+          <Button
+            color="success"
+            variant="contained"
+            onClick={() => setCount((count) => count - 1)}
+          >
+            -
+          </Button>
+        </Stack>
       </div>
-      <h1>Vite + React + + Typescript + MUI 5</h1>
-      <Button color="secondary">Secondary</Button>
-      <Button variant="contained" color="success">
-        Success
-      </Button>
-      <Button variant="outlined" color="error">
-        Error
-      </Button>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </div>
   );
 }
