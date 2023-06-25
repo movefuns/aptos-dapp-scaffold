@@ -26,6 +26,7 @@
     "@typescript-eslint"
   ],
   "rules": {
+    "no-debugger":"off",
     "react/prop-types": "off",
     "react/jsx-curly-brace-presence": "error",
     "react/jsx-uses-react": "off",

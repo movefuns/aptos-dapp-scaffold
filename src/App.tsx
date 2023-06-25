@@ -1,25 +1,28 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Button } from "@mui/material";
 import { WalletConnector } from "@aptos-labs/wallet-adapter-mui-design";
 import { useAutoConnect } from "./components/AutoConnectProvider";
 import Stack from "@mui/material/Stack";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Provider, Network } from "aptos";
+import Switch from "@mui/material/Switch";
+import { MyThemeContext } from "./components/MyThemeContext";
 
 function App() {
-  const [count, setCount] = useState(100);
+  const { updateTheme, themeMode } = useContext(MyThemeContext);
+  const [count, setCount] = useState(1000);
   const { autoConnect, setAutoConnect } = useAutoConnect();
   const { network, account, wallet } = useWallet();
   const [address, updateAddress] = useState("");
   const [coinInfo, updateAccountCoin] = useState({});
+
   let provider = new Provider(Network.MAINNET);
-  switch (network?.name.toString()) {
-    case Network.DEVNET:
-      provider = new Provider(Network.DEVNET);
-      break;
-    case Network.TESTNET:
-      provider = new Provider(Network.TESTNET);
-      break;
+  if (network && network.name) {
+    switch (network?.name.toLowerCase()) {
+      case Network.DEVNET:
+      case Network.TESTNET:
+        provider = new Provider(network?.name.toLowerCase() as Network);
+    }
   }
 
   useEffect(() => {
@@ -39,9 +42,26 @@ function App() {
     }
   }, [account]);
 
+  const [checked, setChecked] = useState(themeMode === "light");
+
+  const handleChange = (event: any) => {
+    setChecked(event.target.checked);
+    if (checked) {
+      updateTheme("dark");
+    } else {
+      updateTheme("light");
+    }
+  };
+
   return (
     <div>
       <WalletConnector />
+
+      <Switch
+        checked={checked}
+        onChange={handleChange}
+        inputProps={{ "aria-label": "controlled" }}
+      />
       <p>{JSON.stringify(wallet)}</p>
       <p>{JSON.stringify(network)}</p>
       <p>{JSON.stringify(account)}</p>
