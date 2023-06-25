@@ -1,15 +1,14 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@mui/material";
 import { WalletConnector } from "@aptos-labs/wallet-adapter-mui-design";
 import { useAutoConnect } from "./components/AutoConnectProvider";
 import Stack from "@mui/material/Stack";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Provider, Network } from "aptos";
-import Switch from "@mui/material/Switch";
-import { MyThemeContext } from "./components/MyThemeContext";
+
+import { MyThemeSwitch } from "./components/MyThemeContext";
 
 function App() {
-  const { updateTheme, themeMode } = useContext(MyThemeContext);
   const [count, setCount] = useState(1000);
   const { autoConnect, setAutoConnect } = useAutoConnect();
   const { network, account, wallet } = useWallet();
@@ -42,26 +41,10 @@ function App() {
     }
   }, [account]);
 
-  const [checked, setChecked] = useState(themeMode === "light");
-
-  const handleChange = (event: any) => {
-    setChecked(event.target.checked);
-    if (checked) {
-      updateTheme("dark");
-    } else {
-      updateTheme("light");
-    }
-  };
-
   return (
     <div>
       <WalletConnector />
-
-      <Switch
-        checked={checked}
-        onChange={handleChange}
-        inputProps={{ "aria-label": "controlled" }}
-      />
+      <MyThemeSwitch />
       <p>{JSON.stringify(wallet)}</p>
       <p>{JSON.stringify(network)}</p>
       <p>{JSON.stringify(account)}</p>
