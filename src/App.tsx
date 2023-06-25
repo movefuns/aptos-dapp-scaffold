@@ -7,11 +7,13 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Provider, Network } from "aptos";
 
 import { MyThemeSwitch } from "./components/MyThemeContext";
+import { DAPP_ADDRESS } from "./utils/const";
 
 function App() {
+  const [counter, updateCounter] = useState<any>({});
   const [count, setCount] = useState(1000);
   const { autoConnect, setAutoConnect } = useAutoConnect();
-  const { network, account, wallet } = useWallet();
+  const { network, account, wallet, signAndSubmitTransaction } = useWallet();
   const [address, updateAddress] = useState("");
   const [coinInfo, updateAccountCoin] = useState({});
 
@@ -30,6 +32,19 @@ function App() {
         const coins = await provider.getAccountCoinsData(account.address);
         console.log(coins);
         updateAccountCoin(coins);
+
+        const counter = await provider.aptosClient
+          .getAccountResource(
+            account.address.toString(),
+            `${DAPP_ADDRESS}::mycounter::CounterHolder`
+          )
+          .catch((err) => {
+            console.log(err);
+          });
+
+        if (counter) {
+          updateCounter(counter);
+        }
       }
     };
     asyncTask();
@@ -41,6 +56,20 @@ function App() {
     }
   }, [account]);
 
+  const createCounter = async () => {
+    const params = {
+      type: "entry_function_payload",
+      function: `${DAPP_ADDRESS}::mycounter::make_counter`,
+      type_arguments: [],
+      arguments: [
+        "0x3ee0661c3e99c34d502daa36a2bd12b6b3bd52b6762c2f071cddd6a187b17309",
+        0,
+        "hello default message",
+      ],
+    };
+    await signAndSubmitTransaction(params);
+  };
+
   return (
     <div>
       <WalletConnector />
@@ -50,6 +79,26 @@ function App() {
       <p>{JSON.stringify(account)}</p>
       <p>{JSON.stringify(coinInfo)}</p>
       <p>{address}</p>
+      <p>
+        {counter.data == null ? (
+          <Button
+            variant="contained"
+            color="info"
+            onClick={() => {
+              createCounter();
+            }}
+          >
+            Create a counter
+          </Button>
+        ) : (
+          <>
+            counter holder :{" "}
+            <b>
+              <pre>{JSON.stringify(counter, null, 2)}</pre>
+            </b>
+          </>
+        )}
+      </p>
       {autoConnect ? null : (
         <Button
           variant="contained"

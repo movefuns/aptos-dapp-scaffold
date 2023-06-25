@@ -1,0 +1,9 @@
+[package]
+name = 'playground'
+version = '1.0.0'
+
+[addresses]
+playground = "_"
+
+[dependencies.AptosFramework]
+local = "../../aptos-core/aptos-move/framework/aptos-framework"
