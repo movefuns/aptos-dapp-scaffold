@@ -15,19 +15,34 @@ module playground::mycounter {
         descrition: string::String
     }
 
+    public fun allow_write(address:address,counter:&mut CounterHolder):bool {
+        counter.allow == address || counter.creator == address 
+    }
+
+    public fun counter_exist(address:address):bool {
+        exists<CounterHolder>(address)
+    }
+
     public entry fun make_counter(account:&signer,allow:address,value:u64,descrition:string::String) {
         let creator = signer::address_of(account);
-        assert!(!exists<CounterHolder>(creator), error::already_exists(E_DATA_EXIST));
+        assert!(!counter_exist(creator), error::already_exists(E_DATA_EXIST));
         move_to(account,CounterHolder{value,creator,allow,descrition});
     }
 
     public entry fun update_counter(account:&signer,holder:address,value:u64,descrition:string::String) acquires CounterHolder {
-        assert!(exists<CounterHolder>(holder), error::not_found(E_DATA_NOT_FOUND));
+        assert!(counter_exist(holder), error::already_exists(E_DATA_NOT_FOUND));
         let current = signer::address_of(account);
         let mut_counter = borrow_global_mut<CounterHolder>(holder);
-        assert!(mut_counter.creator == current || mut_counter.allow == current , error::not_found(E_NOT_ALLOW));
+        assert!(allow_write(current,mut_counter), error::not_found(E_NOT_ALLOW));
         mut_counter.value = value;
         mut_counter.descrition = descrition;
+    }
+
+    public entry fun delete_counter(account:&signer) acquires CounterHolder {
+        let current = signer::address_of(account);
+        assert!(counter_exist(current), error::not_found(E_DATA_NOT_FOUND));
+        let counter = move_from<CounterHolder>(current);
+        let CounterHolder {value:_,creator:_,allow:_,descrition:_ } = counter;
     }
 
 

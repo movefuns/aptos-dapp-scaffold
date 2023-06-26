@@ -7,7 +7,7 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Provider, Network } from "aptos";
 
 import { MyThemeSwitch } from "./components/MyThemeContext";
-import { DAPP_ADDRESS } from "./utils/const";
+import { DAPP_ADDRESS, PackageLink } from "./utils/const";
 
 function App() {
   const [counter, updateCounter] = useState<any>({});
@@ -72,13 +72,23 @@ function App() {
 
   return (
     <div>
-      <WalletConnector />
-      <MyThemeSwitch />
+      <p>
+        <WalletConnector />
+        <MyThemeSwitch />
+      </p>
+      <p>
+        Explorer:{" "}
+        <a target="_blank" rel="noreferrer" href={PackageLink()}>
+          {DAPP_ADDRESS}
+        </a>
+      </p>
+
       <p>{JSON.stringify(wallet)}</p>
       <p>{JSON.stringify(network)}</p>
       <p>{JSON.stringify(account)}</p>
       <p>{JSON.stringify(coinInfo)}</p>
       <p>{address}</p>
+
       <p>
         {counter.data == null ? (
           <Button
