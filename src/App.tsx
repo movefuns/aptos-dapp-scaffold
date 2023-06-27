@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, TextField, Stack } from "@mui/material";
+import { Button, TextField, Stack, SxProps } from "@mui/material";
 
 import { WalletConnector } from "@aptos-labs/wallet-adapter-mui-design";
 import { useAutoConnect } from "./components/AutoConnectProvider";
@@ -9,7 +9,9 @@ import { Provider, Network } from "aptos";
 import { MyThemeSwitch } from "./components/MyThemeContext";
 import { DAPP_ADDRESS, PackageLink } from "./utils/const";
 
-function App() {
+const commonSx: SxProps = { width: "50%", marginLeft: "1rem" };
+
+const App = () => {
   const [counter, updateCounter] = useState<{
     value: number;
     description: string;
@@ -18,6 +20,7 @@ function App() {
   const { autoConnect, setAutoConnect } = useAutoConnect();
   const { network, account, wallet, signAndSubmitTransaction } = useWallet();
   const [coinInfo, updateAccountCoin] = useState({});
+  const [hasCounter, updateHasCounter] = useState(false);
 
   let provider = new Provider(Network.MAINNET);
   if (network && network.name) {
@@ -45,8 +48,9 @@ function App() {
           });
 
         if (counter) {
-          console.log(`counter reuslt : ${JSON.stringify(counter)}`);
           const data = counter.data as any;
+          console.log(`counter reuslt : ${JSON.stringify(data)}`);
+          updateHasCounter(true);
           updateCounter({
             value: data.value,
             description: data.description,
@@ -58,12 +62,35 @@ function App() {
     asyncTask();
   }, [account]);
 
-  const createCounter = async () => {
+  const createCounterHandle = async () => {
     const params = {
       type: "entry_function_payload",
       function: `${DAPP_ADDRESS}::mycounter::make_counter`,
       type_arguments: [],
       arguments: [counter.allow, counter.value, counter.description],
+    };
+    await signAndSubmitTransaction(params);
+  };
+  const updateCounterHandle = async () => {
+    const params = {
+      type: "entry_function_payload",
+      function: `${DAPP_ADDRESS}::mycounter::update_counter`,
+      type_arguments: [],
+      arguments: [
+        account?.address as string,
+        counter.value,
+        counter.description,
+      ],
+    };
+    await signAndSubmitTransaction(params);
+  };
+
+  const deleteCounterHandle = async () => {
+    const params = {
+      type: "entry_function_payload",
+      function: `${DAPP_ADDRESS}::mycounter::delete_counter`,
+      type_arguments: [],
+      arguments: [],
     };
     await signAndSubmitTransaction(params);
   };
@@ -122,9 +149,7 @@ function App() {
             variant="standard"
             type="number"
             value={counter.value}
-            sx={{
-              width: "50%",
-            }}
+            sx={commonSx}
             onChange={(e) =>
               updateCounter({ ...counter, value: parseInt(e.target.value, 10) })
             }
@@ -135,32 +160,54 @@ function App() {
             label="Allow update address"
             variant="standard"
             value={counter.allow}
-            sx={{
-              width: "50%",
-            }}
+            sx={commonSx}
             onChange={(e) =>
               updateCounter({ ...counter, allow: e.target.value })
             }
           />
         </div>
-        <div>Description: {counter.description}</div>
+        <div>
+          <TextField
+            label="Counter description"
+            variant="standard"
+            value={counter.description}
+            sx={commonSx}
+            onChange={(e) =>
+              updateCounter({ ...counter, description: e.target.value })
+            }
+          />
+        </div>
         <div>
           <Button
             sx={{
-              marginTop: "1rem",
+              ...commonSx,
+              width: "25%",
             }}
             variant="contained"
             color="info"
             onClick={() => {
-              counter.value === 0 ? createCounter() : createCounter();
+              hasCounter ? updateCounterHandle() : createCounterHandle();
             }}
           >
-            {counter.value === 0 ? "create counter" : "update counter"}
+            {hasCounter ? "update counter" : "create counter"}
           </Button>
+          {hasCounter && (
+            <Button
+              sx={{
+                ...commonSx,
+                width: "25%",
+              }}
+              variant="contained"
+              color="error"
+              onClick={deleteCounterHandle}
+            >
+              Delete My Counter
+            </Button>
+          )}
         </div>
       </Stack>
     </div>
   );
-}
+};
 
 export default App;
