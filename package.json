@@ -8,7 +8,7 @@
     "build": "tsc && vite build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "publish": "rm -rf docs && mv dist docs && echo 'aptos-dapp-scaffold.movefuns.xyz' > docs/CNAME "
+    "pub": "/bin/bash scripts/pub_page.sh"
   },
   "dependencies": {
     "@aptos-labs/wallet-adapter-mui-design": "^1.0.0",
