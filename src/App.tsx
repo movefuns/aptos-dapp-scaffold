@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, TextField, Stack, SxProps } from "@mui/material";
+import { Button, TextField, Stack, SxProps, Divider } from "@mui/material";
 
 import { WalletConnector } from "@aptos-labs/wallet-adapter-mui-design";
 import { useAutoConnect } from "./components/AutoConnectProvider";
@@ -18,8 +18,8 @@ const App = () => {
     allow: string;
   }>({ value: 0, description: "", allow: "" });
   const { autoConnect, setAutoConnect } = useAutoConnect();
-  const { network, account, wallet, signAndSubmitTransaction } = useWallet();
-  const [coinInfo, updateAccountCoin] = useState({});
+  const { network, account, signAndSubmitTransaction } = useWallet();
+  const [coinInfo, updateAccountCoin] = useState<any>({});
   const [hasCounter, updateHasCounter] = useState(false);
 
   let provider = new Provider(Network.MAINNET);
@@ -128,11 +128,27 @@ const App = () => {
 
   const BasicWallet = () => {
     return (
-      <div style={{ marginTop: "2rem" }}>
-        <p>{JSON.stringify(wallet)}</p>
-        <p>{JSON.stringify(network)}</p>
-        <p>{JSON.stringify(account)}</p>
-        <p>{JSON.stringify(coinInfo)}</p>
+      <div>
+        <p>Network : {network && network.name}</p>
+        <b>Address : {account?.address}</b>
+        <p>Publickey : {account?.publicKey}</p>
+        <div>
+          <p>Coin List </p>
+          <ul>
+            {coinInfo.current_coin_balances &&
+              coinInfo.current_coin_balances.map((item: any) => {
+                return (
+                  <li key={item.coin_type}>
+                    {item.coin_type}
+                    <b style={{ marginLeft: "1rem" }}>{item.amount}</b>
+                    <b style={{ marginLeft: "1rem" }}>
+                      {item.coin_info.symbol}
+                    </b>
+                  </li>
+                );
+              })}
+          </ul>
+        </div>
       </div>
     );
   };
@@ -142,6 +158,7 @@ const App = () => {
       <MyHeader />
       <BasicWallet />
 
+      <Divider sx={{ margin: "1rem" }}>Aptos Counter Operate</Divider>
       <Stack direction="column" spacing={3}>
         <div>
           <TextField
