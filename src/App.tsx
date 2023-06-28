@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { Button, TextField, Stack, SxProps, Divider } from "@mui/material";
+import {
+  Button,
+  TextField,
+  Stack,
+  SxProps,
+  Divider,
+  LinearProgress,
+} from "@mui/material";
 
 import { WalletConnector } from "@aptos-labs/wallet-adapter-mui-design";
 import { useAutoConnect } from "./components/AutoConnectProvider";
@@ -11,6 +18,32 @@ import { DAPP_ADDRESS, PackageLink } from "./utils/const";
 
 const commonSx: SxProps = { width: "50%", marginLeft: "1rem" };
 
+const WalletLoading = () => {
+  const { connected } = useWallet();
+  const [connectTimeout, updateConnectTimeout] = useState(false);
+  const { autoConnect } = useAutoConnect();
+
+  useEffect(() => {
+    setTimeout(() => {
+      updateConnectTimeout(true);
+    }, 2000);
+  }, []);
+
+  return (
+    <>
+      {connected ? null : (
+        <>
+          {autoConnect ? (
+            connectTimeout ? null : (
+              <LinearProgress color="secondary" sx={{ marginBottom: "1rem" }} />
+            )
+          ) : null}
+        </>
+      )}
+    </>
+  );
+};
+
 const App = () => {
   const [counter, updateCounter] = useState<{
     value: number;
@@ -18,7 +51,7 @@ const App = () => {
     allow: string;
   }>({ value: 0, description: "", allow: "" });
   const { autoConnect, setAutoConnect } = useAutoConnect();
-  const { network, account, signAndSubmitTransaction } = useWallet();
+  const { network, account, signAndSubmitTransaction, connected } = useWallet();
   const [coinInfo, updateAccountCoin] = useState<any>({});
   const [hasCounter, updateHasCounter] = useState(false);
 
@@ -30,6 +63,10 @@ const App = () => {
         provider = new Provider(network?.name.toLowerCase() as Network);
     }
   }
+
+  useEffect(() => {
+    setTimeout(() => updateConnectTimeout(true), 3500);
+  }, []);
 
   useEffect(() => {
     const asyncTask = async () => {
@@ -111,7 +148,7 @@ const App = () => {
             {DAPP_ADDRESS}
           </a>
         </span>
-        {autoConnect ? null : (
+        {autoConnect ? null : connected ? (
           <Button
             variant="contained"
             color="success"
@@ -121,7 +158,7 @@ const App = () => {
           >
             Set autoConnect
           </Button>
-        )}
+        ) : null}
       </div>
     );
   };
@@ -154,76 +191,83 @@ const App = () => {
   };
 
   return (
-    <div>
-      <MyHeader />
-      <BasicWallet />
+    <>
+      <WalletLoading />
 
-      <Divider sx={{ margin: "1rem" }}>Aptos Counter Operate</Divider>
-      <Stack direction="column" spacing={3}>
-        <div>
-          <TextField
-            label="Counter value"
-            variant="standard"
-            type="number"
-            value={counter.value}
-            sx={commonSx}
-            onChange={(e) =>
-              updateCounter({ ...counter, value: parseInt(e.target.value, 10) })
-            }
-          />
-        </div>
-        <div>
-          <TextField
-            label="Allow update address"
-            variant="standard"
-            value={counter.allow}
-            sx={commonSx}
-            onChange={(e) =>
-              updateCounter({ ...counter, allow: e.target.value })
-            }
-          />
-        </div>
-        <div>
-          <TextField
-            label="Counter description"
-            variant="standard"
-            value={counter.description}
-            sx={commonSx}
-            onChange={(e) =>
-              updateCounter({ ...counter, description: e.target.value })
-            }
-          />
-        </div>
-        <div>
-          <Button
-            sx={{
-              ...commonSx,
-              width: "25%",
-            }}
-            variant="contained"
-            color="info"
-            onClick={() => {
-              hasCounter ? updateCounterHandle() : createCounterHandle();
-            }}
-          >
-            {hasCounter ? "update counter" : "create counter"}
-          </Button>
-          {hasCounter && (
+      <div>
+        <MyHeader />
+        <BasicWallet />
+
+        <Divider sx={{ margin: "1rem" }}>Aptos Counter Operate</Divider>
+        <Stack direction="column" spacing={3}>
+          <div>
+            <TextField
+              label="Counter value"
+              variant="standard"
+              type="number"
+              value={counter.value}
+              sx={commonSx}
+              onChange={(e) =>
+                updateCounter({
+                  ...counter,
+                  value: parseInt(e.target.value, 10),
+                })
+              }
+            />
+          </div>
+          <div>
+            <TextField
+              label="Allow update address"
+              variant="standard"
+              value={counter.allow}
+              sx={commonSx}
+              onChange={(e) =>
+                updateCounter({ ...counter, allow: e.target.value })
+              }
+            />
+          </div>
+          <div>
+            <TextField
+              label="Counter description"
+              variant="standard"
+              value={counter.description}
+              sx={commonSx}
+              onChange={(e) =>
+                updateCounter({ ...counter, description: e.target.value })
+              }
+            />
+          </div>
+          <div>
             <Button
               sx={{
                 ...commonSx,
                 width: "25%",
               }}
               variant="contained"
-              color="error"
-              onClick={deleteCounterHandle}
+              color="info"
+              onClick={() => {
+                hasCounter ? updateCounterHandle() : createCounterHandle();
+              }}
             >
-              Delete My Counter
+              {hasCounter ? "update counter" : "create counter"}
             </Button>
-          )}
-        </div>
-      </Stack>
-    </div>
+            {hasCounter && (
+              <Button
+                sx={{
+                  ...commonSx,
+                  width: "25%",
+                }}
+                variant="contained"
+                color="error"
+                onClick={deleteCounterHandle}
+              >
+                Delete My Counter
+              </Button>
+            )}
+          </div>
+        </Stack>
+      </div>
+    </>
   );
 };
 

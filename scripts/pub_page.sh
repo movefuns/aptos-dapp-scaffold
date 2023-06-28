@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "build pages"
+yarn build 
 echo "clean old pages"
 rm -rf docs/index.html docs/assets/ 
 echo "copy generated files"
