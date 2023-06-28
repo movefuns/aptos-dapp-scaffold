@@ -65,10 +65,6 @@ const App = () => {
   }
 
   useEffect(() => {
-    setTimeout(() => updateConnectTimeout(true), 3500);
-  }, []);
-
-  useEffect(() => {
     const asyncTask = async () => {
       if (account) {
         const coins = await provider.getAccountCoinsData(account.address);
